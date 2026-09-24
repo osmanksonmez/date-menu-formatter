@@ -184,10 +184,19 @@ export default class DateMenuFormatter extends Extension {
   _enableOn(panels) {
     panels.forEach((panel, idx) => {
       const dateMenuButton = _getDateMenuButton(panel)
+      // remove any previously attached formatter display, so a reused
+      // Dash-to-Panel date menu button never accumulates duplicates
+      const old = dateMenuButton.dateMenuFormatterDisplay
+      if (old && old !== this._displays[idx] && old.get_parent()) {
+        dateMenuButton.remove_child(old)
+      }
+      if (old && old !== this._displays[idx]) {
+        old.destroy()
+      }
       if (!this._displays[idx].get_parent()) {
         dateMenuButton.insert_child_at_index(this._displays[idx], 1)
-        dateMenuButton.dateMenuFormatterDisplay = this._displays[idx]
       }
+      dateMenuButton.dateMenuFormatterDisplay = this._displays[idx]
       if (panel.statusArea.dateMenu._clockDisplay.get_parent()) {
         dateMenuButton.remove_child(panel.statusArea.dateMenu._clockDisplay)
       }
@@ -322,7 +331,7 @@ export default class DateMenuFormatter extends Extension {
     this.formatters = null
     this._formatter = null
     this._formatters_load_promise = null
-    this.display?.forEach((d) => d?.destroy())
+    this._displays?.forEach((d) => d?.destroy())
     this._displays = null
   }
 }
